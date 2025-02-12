@@ -1,0 +1,44 @@
+from flask import Flask, request, jsonify
+import requests
+import io
+from PIL import Image
+
+app = Flask(__name__)
+
+# Substitua pelo seu próprio key e endpoint da Face API
+API_KEY = 'your_api_key'
+ENDPOINT = 'https://your_region.api.cognitive.microsoft.com/face/v1.0/detect'
+
+headers = {
+    'Ocp-Apim-Subscription-Key': API_KEY,
+    'Content-Type': 'application/octet-stream'
+}
+
+def get_face_attributes(image_data):
+    response = requests.post(ENDPOINT, headers=headers, data=image_data)
+    if response.status_code == 200:
+        faces = response.json()
+        if faces:
+            return faces[0]['faceAttributes']
+    return None
+
+@app.route('/process_image', methods=['POST'])
+def process_image():
+    image = request.files['file']
+    image_data = image.read()
+
+    face_attributes = get_face_attributes(image_data)
+    if face_attributes:
+        # Aqui você mapeia as características da imagem para as opções do jogo
+        suggestions = {
+            'eyes': 'Olhos grandes',
+            'mouth': 'Boca sorridente',
+            'eyebrows': 'Sobrancelhas finas',
+            'contour': 'Contorno suave',
+            'nose': 'Nariz reto'
+        }
+        return jsonify(suggestions)
+    return jsonify({'error': 'Não foi possível detectar as características faciais.'}), 400
+
+if __name__ == '__main__':
+    app.run(debug=True)
