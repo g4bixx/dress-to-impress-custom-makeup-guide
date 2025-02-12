@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalize seu Rosto</title>
+</head>
+<body>
+    <h1>Faça o Upload da Sua Foto</h1>
+    <form id="uploadForm">
+        <input type="file" id="imageUpload" accept="image/*" required>
+        <button type="submit">Enviar</button>
+    </form>
+    
+    <div id="suggestions"></div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('imageUpload');
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            fetch('/process_image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const suggestions = document.getElementById('suggestions');
+                suggestions.innerHTML = `
+                    <h3>Sugestões:</h3>
+                    <p>Olhos: ${data.eyes}</p>
+                    <p>Boca: ${data.mouth}</p>
+                    <p>Sobrancelhas: ${data.eyebrows}</p>
+                    <p>Contorno: ${data.contour}</p>
+                    <p>Nariz: ${data.nose}</p>
+                `;
+            });
+        });
+    </script>
+</body>
+</html>
